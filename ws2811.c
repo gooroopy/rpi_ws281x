@@ -55,7 +55,7 @@
 
 /* 3 colors, 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
 #define LED_RESET_uS                             55
-#define LED_BIT_COUNT(leds, freq)                ((leds * 3 * 8 * 3) + ((LED_RESET_uS * \
+#define LED_BIT_COUNT(leds, freq)                ((leds * 4 * 8 * 3) + ((LED_RESET_uS * \
                                                   (freq * 3)) / 1000000))
 
 // Pad out to the nearest uint32 + 32-bits for idle low/high times the number of channels
@@ -629,6 +629,7 @@ int ws2811_render(ws2811_t *ws2811)
         ws2811_channel_t *channel = &ws2811->channel[chan];
         int wordpos = chan;
         int scale   = (channel->brightness & 0xff) + 1;
+        int wshift  = (channel->strip_type >> 24) & 0xff;
         int rshift  = (channel->strip_type >> 16) & 0xff;
         int gshift  = (channel->strip_type >> 8)  & 0xff;
         int bshift  = (channel->strip_type >> 0)  & 0xff;
@@ -637,6 +638,7 @@ int ws2811_render(ws2811_t *ws2811)
         {
             uint8_t color[] =
             {
+                (((channel->leds[i] >> wshift) & 0xff) * scale) >> 8, // white
                 (((channel->leds[i] >> rshift) & 0xff) * scale) >> 8, // red
                 (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
                 (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
